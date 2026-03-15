@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Poppins } from 'next/font/google';
 
 import './globals.css';
+import QueryProvider from '@/context/QueryProvider';
 import { cn } from '@/lib/utils';
 
 const poppinsFont = Poppins({
@@ -24,7 +25,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={cn('antialiased', poppinsFont.className)}>
-        {children}
+        <QueryProvider>{children}</QueryProvider>
       </body>
     </html>
   );
