@@ -59,7 +59,7 @@ export default function Home() {
                   <div key={id}>
                     <ArtifactCard
                       artifactData={activeArtifact}
-                      disabled={isDisabled}
+                      isDisabled={isDisabled}
                     />
                   </div>
                 );
