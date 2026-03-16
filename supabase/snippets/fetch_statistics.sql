@@ -69,26 +69,50 @@ WITH
     -- Collect the characters into a single column
     stat_combinations_collected AS (
         SELECT
-            slot,
-            main_stat,
-            sorted_substats AS substats,
-            array_agg(DISTINCT character_id ORDER BY character_id) AS characters
-        FROM stat_combinations
-        GROUP BY slot, main_stat, sorted_substats
+            inner_aggregation.slot,
+            inner_aggregation.main_stat,
+            json_agg(
+                    json_build_object(
+                            'characters', inner_aggregation.characters,
+                            'stats', inner_aggregation.sorted_substats
+                    )
+            ) AS substats
+        FROM (
+                 SELECT
+                     slot,
+                     main_stat,
+                     sorted_substats,
+                     array_agg(DISTINCT character_id ORDER BY character_id) AS characters
+                 FROM stat_combinations
+                 GROUP BY slot, main_stat, sorted_substats
+             ) inner_aggregation
+        GROUP BY inner_aggregation.slot, inner_aggregation.main_stat
     ),
 
     -- Additionally, if the artifact is of type 'Cavern Relic' additionally create collected stat combinations for 'Head' and 'Hands' slots
     static_combinations_collected AS (
         SELECT
-            static_slots.slot,
-            static_slots.main_stat,
-            substat_groups.sorted_substats as substats,
-            array_agg(DISTINCT substat_groups.character_id ORDER BY substat_groups.character_id) AS characters
+            inner_aggregation.slot,
+            inner_aggregation.main_stat,
+            json_agg(
+                    json_build_object(
+                            'characters', inner_aggregation.characters,
+                            'stats', inner_aggregation.sorted_substats
+                    )
+            ) AS substats
         FROM (
-                 VALUES ('Head', 'HP'), ('Hands', 'ATK')
-             ) AS static_slots(slot, main_stat)
-                 CROSS JOIN substat_groups
-        GROUP BY static_slots.slot, static_slots.main_stat, substat_groups.sorted_substats
+                 SELECT
+                     static_slots.slot,
+                     static_slots.main_stat,
+                     substat_groups.sorted_substats,
+                     array_agg(DISTINCT substat_groups.character_id ORDER BY substat_groups.character_id) AS characters
+                 FROM (
+                          VALUES ('Head', 'HP'), ('Hands', 'ATK')
+                      ) AS static_slots(slot, main_stat)
+                          CROSS JOIN substat_groups
+                 GROUP BY static_slots.slot, static_slots.main_stat, substat_groups.sorted_substats
+             ) inner_aggregation
+        GROUP BY inner_aggregation.slot, inner_aggregation.main_stat
     ),
 
     -- Reshape into a single JSON array for each artifact slot
@@ -97,12 +121,11 @@ WITH
             slot,
             json_agg(
                     json_build_object(
-                            'stat', main_stat,
-                            'substats', substats,
-                            'characters', characters
+                            'main', main_stat,
+                            'substats', substats
                     )
                         ORDER BY main_stat
-            ) as entries
+            ) AS entries
         FROM stat_combinations_collected
         GROUP BY slot
     ),
@@ -113,9 +136,8 @@ WITH
             slot,
             json_agg(
                     json_build_object(
-                            'stat', main_stat,
-                            'substats', substats,
-                            'characters', characters
+                            'main', main_stat,
+                            'substats', substats
                     )
             ) AS entries
         FROM static_combinations_collected
@@ -130,7 +152,16 @@ WITH
         SELECT slot, entries FROM slot_entries
     )
 
-SELECT json_object_agg(slot, entries)
+SELECT json_object_agg(slot, entries ORDER BY
+    CASE slot
+      WHEN 'Head' THEN 1
+      WHEN 'Hands' THEN 2
+      WHEN 'Body' THEN 3
+      WHEN 'Feet' THEN 4
+      WHEN 'Planar Sphere' THEN 1
+      WHEN 'Link Rope' THEN 2
+    END
+       )
 INTO result
 FROM all_entries;
 

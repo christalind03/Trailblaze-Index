@@ -1,5 +1,13 @@
 import { Database } from '@/../supabase/database.types';
 
+export type AggregatedData = {
+  main: string;
+  substats: {
+    characters: number[];
+    stats: string[];
+  }[];
+};
+
 export type Artifact = Database['public']['Tables']['artifacts']['Row'];
 
 export type Character = Database['public']['Tables']['characters']['Row'];
