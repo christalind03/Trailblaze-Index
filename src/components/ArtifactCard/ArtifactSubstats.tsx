@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 
 import { ArtifactChip } from '@/components/ArtifactCard';
-import CharacterAvatarGroup from '@/components/CharacterAvatarGroup';
+import { CharacterAvatarGroup } from '@/components/CharacterAvatarGroup';
 import { useFilter } from '@/context/FilterProvider';
 
 type Props = {

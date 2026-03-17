@@ -8,11 +8,7 @@ type Props = {
   size?: 'default' | 'lg' | 'sm';
 };
 
-export default function CharacterAvatar({
-  characterID,
-  className,
-  size,
-}: Props) {
+export function CharacterAvatar({ characterID, className, size }: Props) {
   return (
     <Avatar
       className={cn('bg-secondary after:border-0', className)}

@@ -5,10 +5,10 @@ import { useQuery } from '@tanstack/react-query';
 import { Fragment, useMemo, useState } from 'react';
 
 import { ArtifactCard } from '@/components/ArtifactCard';
-import CharacterFilter from '@/components/CharacterFilter';
-import Error from '@/components/Error';
-import Hero from '@/components/Hero';
-import Loading from '@/components/Loading';
+import { CharacterFilter } from '@/components/CharacterFilter';
+import { Error } from '@/components/Error';
+import { Hero } from '@/components/Hero';
+import { Loading } from '@/components/Loading';
 import { FilterProvider } from '@/context/FilterProvider';
 import { russoOne } from '@/lib/common';
 import { Character } from '@/lib/types';

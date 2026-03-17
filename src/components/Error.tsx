@@ -7,7 +7,7 @@ type Props = {
   errorObj: null | PostgrestError;
 };
 
-export default function Error({ errorObj }: Props) {
+export function Error({ errorObj }: Props) {
   return (
     <Alert className="bg-red-950/10 border-destructive" variant="destructive">
       <InfoIcon />

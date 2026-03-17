@@ -4,8 +4,8 @@ import { SearchIcon } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { ArtifactStats } from '@/components/ArtifactCard';
-import Error from '@/components/Error';
-import Loading from '@/components/Loading';
+import { Error } from '@/components/Error';
+import { Loading } from '@/components/Loading';
 import {
   InputGroup,
   InputGroupAddon,

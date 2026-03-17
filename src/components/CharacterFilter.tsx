@@ -2,7 +2,7 @@
 
 import { SlidersHorizontal } from 'lucide-react';
 
-import CharacterAvatar from '@/components/CharacterAvatar';
+import { CharacterAvatar } from '@/components/CharacterAvatar';
 import {
   Combobox,
   ComboboxChips,
@@ -25,7 +25,7 @@ type Props = {
   onChange: (characterList: Character[]) => void;
 };
 
-export default function CharacterFilter({ characterList, onChange }: Props) {
+export function CharacterFilter({ characterList, onChange }: Props) {
   const comboboxAnchor = useComboboxAnchor();
 
   return (

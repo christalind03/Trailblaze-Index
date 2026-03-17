@@ -1,6 +1,6 @@
 import { forwardRef, Fragment, useMemo } from 'react';
 
-import CharacterAvatarGroup from '@/components/CharacterAvatarGroup';
+import { CharacterAvatarGroup } from '@/components/CharacterAvatarGroup';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { useFilter } from '@/context/FilterProvider';
 import { STORAGE_URL } from '@/lib/constants';

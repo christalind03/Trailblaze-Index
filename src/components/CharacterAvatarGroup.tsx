@@ -1,4 +1,4 @@
-import CharacterAvatar from '@/components/CharacterAvatar';
+import { CharacterAvatar } from '@/components/CharacterAvatar';
 import { AvatarGroup, AvatarGroupCount } from '@/components/ui/Avatar';
 import { cn } from '@/lib/utils';
 
@@ -7,12 +7,9 @@ type Props = {
   groupCount?: number;
 };
 
-const ICON_SIZE = 'size-5' as const;
+const ICON_SIZE = 'size-5';
 
-export default function CharacterAvatarGroup({
-  characterList,
-  groupCount = 0,
-}: Props) {
+export function CharacterAvatarGroup({ characterList, groupCount = 0 }: Props) {
   return (
     <AvatarGroup className="*:data-[slot=avatar]:ring-0">
       {characterList.map((characterID) => (

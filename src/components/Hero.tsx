@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { russoOne } from '@/lib/common';
 import { cn } from '@/lib/utils';
 
-export default function Hero() {
+export function Hero() {
   return (
     <div
       className="flex flex-col items-center justify-center min-h-screen overflow-hidden px-5 relative"
