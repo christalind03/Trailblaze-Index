@@ -31,7 +31,7 @@ WITH
         WHERE character_stats.slot = ANY(
             CASE artifact_type
                 WHEN 'Cavern Relic' THEN ARRAY['Body', 'Feet']
-                WHEN 'Planar Ornament' THEN ARRAY['Link Rope', 'Planar Sphere']
+                WHEN 'Planar Ornament' THEN ARRAY['Link_Rope', 'Planar_Sphere']
                 END
             )
     ),
@@ -43,11 +43,11 @@ WITH
             character_substats.character_id,
             character_substats.group,
             ARRAY(
-                SELECT label
+                SELECT DISTINCT UPPER(label)
         FROM public.character_substats as substat_entry
         WHERE substat_entry.character_id = character_substats.character_id
         AND substat_entry.group = character_substats.group
-        ORDER BY label
+        ORDER BY UPPER(label)
       ) AS sorted_substats
         FROM public.character_substats
                  JOIN artifact_users ON artifact_users.character_id = character_substats.character_id
@@ -158,8 +158,8 @@ SELECT json_object_agg(slot, entries ORDER BY
       WHEN 'Hands' THEN 2
       WHEN 'Body' THEN 3
       WHEN 'Feet' THEN 4
-      WHEN 'Planar Sphere' THEN 1
-      WHEN 'Link Rope' THEN 2
+      WHEN 'Planar_Sphere' THEN 1
+      WHEN 'Link_Rope' THEN 2
     END
        )
 INTO result

@@ -32,7 +32,11 @@ export function ArtifactCardContent({
   const [searchText, setSearchText] = useState<string>('');
   const { filteredCharacterIDs } = useFilter();
 
-  const { data: statisticsData, error: statisticsError } = useQuery({
+  const {
+    data: statisticsData,
+    error: statisticsError,
+    isPending: statisticsPending,
+  } = useQuery({
     enabled: isOpen,
     queryFn: () => fetchStatistics(id),
     queryKey: ['statistics', id],
@@ -160,5 +164,9 @@ export function ArtifactCardContent({
     );
   }
 
-  return <Loading />;
+  if (statisticsPending) {
+    return <Loading />;
+  }
+
+  return <Error errorObj={null} />;
 }

@@ -36,6 +36,7 @@ export default function Home() {
   });
 
   const [characterFilter, setCharacterFilter] = useState<Character[]>([]);
+
   const artifactFilter = useMemo(() => {
     if (!artifactData) {
       return [];

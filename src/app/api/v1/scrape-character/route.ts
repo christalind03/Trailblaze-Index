@@ -191,7 +191,16 @@ async function insertArtifacts(
   supabaseClient: SupabaseClient,
   characterID: number
 ) {
-  const artifactsContainer = $('.build-relics .detailed-cones');
+  // There is a possibility of there being 'specialist' sets which offset our target elements
+  // In the case these sets exist on the page we're scraping, we only want to retrieve indices 0 and 2
+  const allContainters = $('.build-relics .detailed-cones');
+  const artifactContainers =
+    2 < allContainters.length
+      ? allContainters.filter(
+          (containerIndex) => containerIndex === 0 || containerIndex === 2
+        )
+      : allContainters;
+
   const artifactRecords = assertSupabaseResponse(
     await supabaseClient.from('artifacts').select('id, name')
   );
@@ -208,12 +217,12 @@ async function insertArtifacts(
   await extractArtifacts(ArtifactSet.Planar);
 
   async function extractArtifacts(artifactSet: ArtifactSet) {
-    const alternativeArtifacts = $(artifactsContainer[artifactSet])
+    const alternativeArtifacts = $(artifactContainers[artifactSet])
       .find('.information:nth-child(2) .hsr-name span')
       .map((_, cheerioElement) => scrapeText($, cheerioElement))
       .get();
 
-    const optimalArtifacts = $(artifactsContainer[artifactSet])
+    const optimalArtifacts = $(artifactContainers[artifactSet])
       .find('.single-cone:first button')
       .map((_, cheerioElement) => scrapeText($, cheerioElement))
       .get();
@@ -300,7 +309,7 @@ async function insertStatistics(
               character_id: characterID,
               label: statLabel,
               priority: priorityIndex,
-              slot: artifactSlot,
+              slot: artifactSlot.trim().replace(/\s+/g, '_'),
             })
           );
         }
@@ -312,7 +321,7 @@ async function insertStatistics(
     const substatsContainer = $(masterContainer)
       .find('.sub-stats p')
       .text()
-      .split(/\bor\b/);
+      .split(/\bor\b(?![^(]*\))/);
 
     for (const [groupIndex, statList] of substatsContainer.entries()) {
       const statLabels = statList
