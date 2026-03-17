@@ -6,6 +6,7 @@ import { Fragment, useMemo, useState } from 'react';
 import { ArtifactCard } from '@/components/ArtifactCard';
 import CharacterFilter from '@/components/CharacterFilter';
 import Hero from '@/components/Hero';
+import Loading from '@/components/Loading';
 import { FilterProvider } from '@/context/FilterProvider';
 import { russoOne } from '@/lib/common';
 import { Character } from '@/lib/types';
@@ -117,7 +118,7 @@ export default function Home() {
             {characterError?.message}
           </div>
         )}
-        {(artifactPending || characterPending) && <div>Loading...</div>}
+        {(artifactPending || characterPending) && <Loading />}
       </div>
     </Fragment>
   );

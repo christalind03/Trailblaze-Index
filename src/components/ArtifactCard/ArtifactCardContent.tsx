@@ -3,6 +3,7 @@ import { SearchIcon } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { ArtifactStats } from '@/components/ArtifactCard';
+import Loading from '@/components/Loading';
 import {
   InputGroup,
   InputGroupAddon,
@@ -153,5 +154,5 @@ export function ArtifactCardContent({
     return <div>{statisticsError.message}</div>;
   }
 
-  return <div>Loading...</div>;
+  return <Loading />;
 }
