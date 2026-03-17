@@ -15,8 +15,13 @@ export default async function fetchArtifacts() {
     throw artifactError;
   }
 
-  return artifactData?.map(({ character_artifacts, ...artifactDetails }) => ({
-    artifactDetails,
-    userIDs: character_artifacts.map(({ character_id }) => character_id),
-  }));
+  return (artifactData ?? [])
+    .map(({ character_artifacts, ...artifactDetails }) => ({
+      artifactDetails,
+      userIDs: character_artifacts.map(({ character_id }) => character_id),
+    }))
+    .sort(
+      (artifactOne, artifactTwo) =>
+        artifactTwo.userIDs.length - artifactOne.userIDs.length
+    );
 }

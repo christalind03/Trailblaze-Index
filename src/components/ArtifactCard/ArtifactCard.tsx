@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import ArtifactCardContent from '@/components/ArtifactCardContent';
-import { ArtifactCardTrigger } from '@/components/ArtifactCardTrigger';
+import { ArtifactCardContent } from '@/components/ArtifactCard';
+import { ArtifactCardTrigger } from '@/components/ArtifactCard';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/Collapsible';
+import { useFilter } from '@/context/FilterProvider';
 import { Artifact } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
@@ -18,8 +19,21 @@ type Props = {
   isDisabled: boolean;
 };
 
-export default function ArtifactCard({ artifactData, isDisabled }: Props) {
+export function ArtifactCard({ artifactData, isDisabled }: Props) {
   const [cardOpen, setCardOpen] = useState(false);
+  const { filterActive, filteredCharacterIDs } = useFilter();
+
+  useEffect(() => {
+    if (filterActive) {
+      const hasFilteredCharacters = artifactData.userIDs.some((characterID) =>
+        filteredCharacterIDs.has(characterID)
+      );
+      if (!hasFilteredCharacters) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setCardOpen(false);
+      }
+    }
+  }, [artifactData.userIDs, filterActive, filteredCharacterIDs, setCardOpen]);
 
   return (
     <Collapsible

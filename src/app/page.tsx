@@ -1,12 +1,14 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { Fragment } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 
-import ArtifactCard from '@/components/ArtifactCard';
+import { ArtifactCard } from '@/components/ArtifactCard';
 import CharacterFilter from '@/components/CharacterFilter';
 import Hero from '@/components/Hero';
+import { FilterProvider } from '@/context/FilterProvider';
 import { russoOne } from '@/lib/common';
+import { Character } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import fetchArtifacts from '@/services/fetchArtifacts';
 import fetchCharacters from '@/services/fetchCharacters';
@@ -30,6 +32,37 @@ export default function Home() {
     queryKey: ['characters'],
   });
 
+  const [characterFilter, setCharacterFilter] = useState<Character[]>([]);
+  const artifactFilter = useMemo(() => {
+    if (!artifactData) {
+      return [];
+    }
+
+    if (!characterFilter?.length) {
+      return artifactData.map(({ artifactDetails: { id } }) => id);
+    }
+
+    return artifactData
+      .filter(({ userIDs }) =>
+        characterFilter.some(({ id }) => userIDs.includes(id))
+      )
+      .map(({ artifactDetails: { id } }) => id);
+  }, [artifactData, characterFilter]);
+
+  const orderedArtifacts = useMemo(() => {
+    if (!artifactData) {
+      return [];
+    }
+
+    const filterSet = new Set(artifactFilter);
+    return [...artifactData].sort((artifactOne, artifactTwo) => {
+      const matchOne = filterSet.has(artifactOne.artifactDetails.id);
+      const matchTwo = filterSet.has(artifactTwo.artifactDetails.id);
+
+      return Number(matchTwo) - Number(matchOne);
+    });
+  }, [artifactData, artifactFilter]);
+
   return (
     <Fragment>
       <Hero />
@@ -45,26 +78,36 @@ export default function Home() {
               >
                 Relic Sets
               </span>
-              <CharacterFilter characterList={characterData} />
+              <CharacterFilter
+                characterList={characterData}
+                onChange={setCharacterFilter}
+              />
             </div>
-            <div className="gap-5 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 m-7.5 w-full">
-              {artifactData.map((activeArtifact) => {
-                const {
-                  artifactDetails: { id },
-                  userIDs,
-                } = activeArtifact;
-                const isDisabled = userIDs.length === 0;
+            <FilterProvider
+              filterActive={0 < characterFilter.length}
+              filteredCharacters={characterFilter}
+            >
+              <div className="gap-5 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 m-7.5 w-full">
+                {orderedArtifacts.map((activeArtifact) => {
+                  const {
+                    artifactDetails: { id },
+                    userIDs,
+                  } = activeArtifact;
 
-                return (
-                  <div key={id}>
-                    <ArtifactCard
-                      artifactData={activeArtifact}
-                      isDisabled={isDisabled}
-                    />
-                  </div>
-                );
-              })}
-            </div>
+                  const isDisabled =
+                    !artifactFilter?.includes(id) || userIDs.length === 0;
+
+                  return (
+                    <div key={id}>
+                      <ArtifactCard
+                        artifactData={activeArtifact}
+                        isDisabled={isDisabled}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </FilterProvider>
           </Fragment>
         )}
         {(artifactError || characterError) && (

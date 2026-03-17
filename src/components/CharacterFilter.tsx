@@ -22,13 +22,27 @@ type Props = {
     characterDetails: Character;
     hasData: boolean;
   }[];
+  onChange: (characterList: Character[]) => void;
 };
 
-export default function CharacterFilter({ characterList }: Props) {
+export default function CharacterFilter({ characterList, onChange }: Props) {
   const comboboxAnchor = useComboboxAnchor();
 
   return (
-    <Combobox autoHighlight items={characterList} multiple>
+    <Combobox
+      autoHighlight
+      items={characterList}
+      multiple
+      onValueChange={(updatedValues) => {
+        const selectedCharacters = characterList
+          .filter(({ characterDetails: { name } }) =>
+            updatedValues.includes(name)
+          )
+          .map(({ characterDetails }) => characterDetails);
+
+        onChange(selectedCharacters);
+      }}
+    >
       <ComboboxChips
         className="bg-secondary border-border p-3 focus-within:ring-0 has-aria-invalid:ring-0"
         ref={comboboxAnchor}
@@ -62,20 +76,18 @@ export default function CharacterFilter({ characterList }: Props) {
         </ComboboxValue>
       </ComboboxChips>
       <ComboboxContent anchor={comboboxAnchor} className="ring-0">
-        <ComboboxEmpty>No items found.</ComboboxEmpty>
+        <ComboboxEmpty>No results found.</ComboboxEmpty>
         <ComboboxList>
-          {(listItem) => {
-            const { characterDetails, hasData } = listItem;
-
+          {({ characterDetails: { id, name }, hasData }) => {
             if (hasData) {
               return (
                 <ComboboxItem
                   className="flex flex-row gap-3 items-center text-center text-muted-foreground data-highlighted:font-medium data-highlighted:text-foreground"
-                  key={characterDetails.id}
-                  value={characterDetails.name}
+                  key={id}
+                  value={name}
                 >
-                  <CharacterAvatar characterID={characterDetails.id} />
-                  {characterDetails.name}
+                  <CharacterAvatar characterID={id} />
+                  {name}
                 </ComboboxItem>
               );
             }
