@@ -1,8 +1,10 @@
+import { PostgrestError } from '@supabase/supabase-js';
 import { useQuery } from '@tanstack/react-query';
 import { SearchIcon } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { ArtifactStats } from '@/components/ArtifactCard';
+import Error from '@/components/Error';
 import Loading from '@/components/Loading';
 import {
   InputGroup,
@@ -151,7 +153,11 @@ export function ArtifactCardContent({
   }
 
   if (statisticsError) {
-    return <div>{statisticsError.message}</div>;
+    return (
+      <div className="p-3">
+        <Error errorObj={statisticsError as PostgrestError} />
+      </div>
+    );
   }
 
   return <Loading />;

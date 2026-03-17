@@ -1,10 +1,12 @@
 'use client';
 
+import { PostgrestError } from '@supabase/supabase-js';
 import { useQuery } from '@tanstack/react-query';
 import { Fragment, useMemo, useState } from 'react';
 
 import { ArtifactCard } from '@/components/ArtifactCard';
 import CharacterFilter from '@/components/CharacterFilter';
+import Error from '@/components/Error';
 import Hero from '@/components/Hero';
 import Loading from '@/components/Loading';
 import { FilterProvider } from '@/context/FilterProvider';
@@ -112,10 +114,10 @@ export default function Home() {
           </Fragment>
         )}
         {(artifactError || characterError) && (
-          <div>
-            {artifactError?.message}
-            <br />
-            {characterError?.message}
+          <div className="max-w-lg">
+            <Error
+              errorObj={(artifactError || characterError) as PostgrestError}
+            />
           </div>
         )}
         {(artifactPending || characterPending) && <Loading />}
