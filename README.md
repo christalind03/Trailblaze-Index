@@ -63,6 +63,3 @@ SELECT public.fetch_statistics(artifact_target := '<id>');
 | Framework | Next.JS (App Router) |
 | Language | TypeScript |
 | Styling | Tailwind CSS |
-
-## License
-This project is licensed under the MIT License. For more information, see the LICENSE file.
