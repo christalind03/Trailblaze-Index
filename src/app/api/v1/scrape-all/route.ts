@@ -1,3 +1,4 @@
+import { waitUntil } from '@vercel/functions';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 
@@ -29,20 +30,22 @@ export async function POST(httpRequest: Request) {
     if (avatarURLs) {
       const apiBaseURL = process.env.BASE_URL ?? 'http://localhost:3000';
 
-      // TODO: We may need to batch this in order to prevent hitting the rate limit for the target site
-      for (const avatarURL of avatarURLs) {
-        // Since this API route is to scrape data in bulk, simply fire-and-forget to prevent timeouts
-        fetch(`${apiBaseURL}/api/v1/scrape-character`, {
-          body: JSON.stringify({
-            avatarURL,
-          }),
-          headers: {
-            Authorization: httpRequest.headers.get('Authorization') ?? '',
-            'Content-Type': 'application/json',
-          },
-          method: 'POST',
-        }).finally(() => {});
-      }
+      waitUntil(
+        Promise.allSettled(
+          avatarURLs.map((avatarURL) =>
+            fetch(`${apiBaseURL}/api/v1/scrape-character`, {
+              body: JSON.stringify({
+                avatarURL,
+              }),
+              headers: {
+                Authorization: httpRequest.headers.get('Authorization') ?? '',
+                'Content-Type': 'application/json',
+              },
+              method: 'POST',
+            })
+          )
+        )
+      );
     }
 
     return new Response(
