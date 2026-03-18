@@ -14,6 +14,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { useFilter } from '@/context/FilterProvider';
 import { SearchProvider } from '@/context/SearchProvider';
+import { useDebounce } from '@/hooks/useDebounce';
 import { STORAGE_URL } from '@/lib/constants';
 import { Artifact } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -31,6 +32,7 @@ export function ArtifactCardContent({
   const [activeSlot, setActiveSlot] = useState<string>('');
   const [searchText, setSearchText] = useState<string>('');
   const { filteredCharacterIDs } = useFilter();
+  const debouncedSearch = useDebounce(searchText);
 
   const {
     data: statisticsData,
@@ -43,7 +45,7 @@ export function ArtifactCardContent({
   });
 
   const searchResults = useMemo(() => {
-    if (!searchText?.trim() || !statisticsData) {
+    if (!debouncedSearch?.trim() || !statisticsData) {
       return [];
     }
 
@@ -52,14 +54,15 @@ export function ArtifactCardContent({
         if (activeSlot === statisticsKey) {
           return statisticsValue.filter(
             (currentEntry) =>
-              currentEntry.main.toLowerCase().includes(searchText) ||
+              currentEntry.main.toLowerCase().includes(debouncedSearch) ||
               currentEntry.substats.some(
                 (substatData) =>
-                  substatData.characters.some((characterID) =>
-                    filteredCharacterIDs.has(characterID)
-                  ) &&
+                  (!filteredCharacterIDs.size ||
+                    substatData.characters.some((characterID) =>
+                      filteredCharacterIDs.has(characterID)
+                    )) &&
                   substatData.stats.some((currentStat) =>
-                    currentStat.toLowerCase().includes(searchText)
+                    currentStat.toLowerCase().includes(debouncedSearch)
                   )
               )
           );
@@ -68,7 +71,7 @@ export function ArtifactCardContent({
         return [];
       }
     );
-  }, [activeSlot, searchText, filteredCharacterIDs, statisticsData]);
+  }, [activeSlot, debouncedSearch, filteredCharacterIDs, statisticsData]);
 
   useEffect(() => {
     if (statisticsData) {
@@ -116,7 +119,7 @@ export function ArtifactCardContent({
         {Object.entries(statisticsData).map(
           ([statisticsKey, statisticsValue]) => (
             <TabsContent key={statisticsKey} value={statisticsKey}>
-              <SearchProvider searchText={searchText}>
+              <SearchProvider searchText={debouncedSearch}>
                 <div className="px-2.5 py-3">
                   <InputGroup className="border-border bg-background/50 has-[[data-slot=input-group-control]:focus-visible]:ring-0 has-[[data-slot][aria-invalid=true]]:ring-0">
                     <InputGroupInput
@@ -133,7 +136,7 @@ export function ArtifactCardContent({
                     </InputGroupAddon>
                   </InputGroup>
                 </div>
-                {!!searchText && searchResults.length === 0 ? (
+                {!!debouncedSearch && searchResults.length === 0 ? (
                   <div className="flex items-center justify-center p-5 text-muted-foreground">
                     No results found.
                   </div>

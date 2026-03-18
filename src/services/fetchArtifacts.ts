@@ -8,8 +8,7 @@ export default async function fetchArtifacts() {
       *,
       character_artifacts(character_id)
     `
-    )
-    .order('name', { ascending: true });
+    );
 
   if (artifactError) {
     throw artifactError;
@@ -20,8 +19,14 @@ export default async function fetchArtifacts() {
       artifactDetails,
       userIDs: character_artifacts.map(({ character_id }) => character_id),
     }))
-    .sort(
-      (artifactOne, artifactTwo) =>
-        artifactTwo.userIDs.length - artifactOne.userIDs.length
-    );
+    .sort((firstArtifact, secondArtifact) => {
+      const firstHasUsers = firstArtifact.userIDs.length > 0;
+      const secondHasUsers = secondArtifact.userIDs.length > 0;
+
+      if (firstHasUsers !== secondHasUsers) return firstHasUsers ? -1 : 1;
+
+      return firstArtifact.artifactDetails.name
+        .toLowerCase()
+        .localeCompare(secondArtifact.artifactDetails.name.toLowerCase());
+    });
 }
