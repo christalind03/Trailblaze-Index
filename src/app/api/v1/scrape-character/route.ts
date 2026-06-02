@@ -18,8 +18,6 @@ enum ArtifactSet {
   Planar = 1,
 }
 
-const MILLISECONDS_PER_DAY = 86400000 as const;
-
 export async function POST(httpRequest: Request) {
   try {
     verifyAccess(httpRequest);
@@ -33,7 +31,7 @@ export async function POST(httpRequest: Request) {
       );
     }
 
-    const { data: axiosData, headers: axiosHeaders } = await axios.get(
+    const { data: axiosData } = await axios.get(
       `${PRYDWEN_URL}${avatarURL}`
     );
 
@@ -56,7 +54,7 @@ export async function POST(httpRequest: Request) {
       );
     }
 
-    const { characterMetadata, hasExisted } = await fetchMetadata(
+    const characterMetadata = await fetchMetadata(
       $,
       supabaseClient,
       avatarURL
@@ -70,25 +68,11 @@ export async function POST(httpRequest: Request) {
       );
     }
 
-    const recentlyModified =
-      hasExisted &&
-      (() => {
-        const lastFetched = new Date(characterMetadata.fetched_at);
-        const lastModified = new Date(axiosHeaders['Last-Modified']);
-        const timeDifference = Math.abs(
-          lastFetched.getTime() - lastModified.getTime()
-        );
-
-        return timeDifference <= MILLISECONDS_PER_DAY;
-      });
-
-    if (!hasExisted || recentlyModified) {
-      await updateCharacterRecords(
-        $,
-        supabaseClient,
-        characterMetadata.character_id
-      );
-    }
+    await updateCharacterRecords(
+      $,
+      supabaseClient,
+      characterMetadata.character_id
+    );
 
     return new Response(
       JSON.stringify({
@@ -130,7 +114,6 @@ async function fetchMetadata(
   sourceURL: string
 ) {
   let characterMetadata: CharacterMetadata | null;
-  let hasExisted = true;
 
   // Check to see if this character already has existing metadata...
   characterMetadata = assertSupabaseResponse(
@@ -142,10 +125,7 @@ async function fetchMetadata(
   );
 
   if (characterMetadata) {
-    return {
-      characterMetadata,
-      hasExisted,
-    };
+    return characterMetadata;
   }
 
   // Otherwise, scrape and insert data...
@@ -178,12 +158,7 @@ async function fetchMetadata(
       .single()
   );
 
-  hasExisted = false;
-
-  return {
-    characterMetadata: characterMetadata!,
-    hasExisted,
-  };
+  return characterMetadata;
 }
 
 async function insertArtifacts(
@@ -193,13 +168,13 @@ async function insertArtifacts(
 ) {
   // There is a possibility of there being 'specialist' sets which offset our target elements
   // In the case these sets exist on the page we're scraping, we only want to retrieve indices 0 and 2
-  const allContainters = $('.build-relics .detailed-cones');
+  const allContainers = $('.section-build:first .content-header').eq(1).nextAll('.detailed-cones');
   const artifactContainers =
-    2 < allContainters.length
-      ? allContainters.filter(
+    2 < allContainers.length
+      ? allContainers.filter(
           (containerIndex) => containerIndex === 0 || containerIndex === 2
         )
-      : allContainters;
+      : allContainers;
 
   const artifactRecords = assertSupabaseResponse(
     await supabaseClient.from('artifacts').select('id, name')
