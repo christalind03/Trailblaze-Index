@@ -31,9 +31,7 @@ export async function POST(httpRequest: Request) {
       );
     }
 
-    const { data: axiosData } = await axios.get(
-      `${PRYDWEN_URL}${avatarURL}`
-    );
+    const { data: axiosData } = await axios.get(`${PRYDWEN_URL}${avatarURL}`);
 
     if (!axiosData) {
       throw new RemoteError(
@@ -54,12 +52,7 @@ export async function POST(httpRequest: Request) {
       );
     }
 
-    const characterMetadata = await fetchMetadata(
-      $,
-      supabaseClient,
-      avatarURL
-    );
-
+    const characterMetadata = await fetchMetadata($, supabaseClient, avatarURL);
     if (!characterMetadata) {
       throw new RemoteError(
         'NOT_FOUND',
@@ -94,11 +87,11 @@ async function deleteCharacterRecords(
   supabaseClient: SupabaseClient,
   characterID: number
 ) {
-  await fromTable('character_artifacts');
-  await fromTable('character_stats');
-  await fromTable('character_substats');
+  await deleteRecords('character_artifacts');
+  await deleteRecords('character_stats');
+  await deleteRecords('character_substats');
 
-  async function fromTable(databaseTable: keyof Database['public']['Tables']) {
+  async function deleteRecords(databaseTable: keyof Database['public']['Tables']) {
     assertSupabaseResponse(
       await supabaseClient
         .from(databaseTable)
@@ -125,11 +118,21 @@ async function fetchMetadata(
   );
 
   if (characterMetadata) {
+    characterMetadata = assertSupabaseResponse(
+      await supabaseClient
+        .from('character_metadata')
+        .update({
+          fetched_at: new Date().toUTCString()
+        })
+        .select()
+        .single()
+    );
+
     return characterMetadata;
   }
 
   // Otherwise, scrape and insert data...
-  const characterIntro = $('div.character-intro h2 strong');
+  const characterIntro = $('div.character-intro strong');
   const characterData = assertSupabaseResponse(
     await supabaseClient
       .from('characters')
@@ -168,7 +171,10 @@ async function insertArtifacts(
 ) {
   // There is a possibility of there being 'specialist' sets which offset our target elements
   // In the case these sets exist on the page we're scraping, we only want to retrieve indices 0 and 2
-  const allContainers = $('.section-build:first .content-header').eq(1).nextAll('.detailed-cones');
+  const allContainers = $('.section-build:first .content-header')
+    .eq(1)
+    .nextAll('.detailed-cones');
+
   const artifactContainers =
     2 < allContainers.length
       ? allContainers.filter(
@@ -193,12 +199,12 @@ async function insertArtifacts(
 
   async function extractArtifacts(artifactSet: ArtifactSet) {
     const alternativeArtifacts = $(artifactContainers[artifactSet])
-      .find('.information:nth-child(2) .hsr-name span')
+      .find('.information:first .hsr-name span')
       .map((_, cheerioElement) => scrapeText($, cheerioElement))
       .get();
 
     const optimalArtifacts = $(artifactContainers[artifactSet])
-      .find('.single-cone:first button')
+      .find('.single-cone:first .hsr-set-name')
       .map((_, cheerioElement) => scrapeText($, cheerioElement))
       .get();
 

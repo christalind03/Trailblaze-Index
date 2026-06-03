@@ -77,6 +77,11 @@ export function Hero() {
         </p>
         <Button
           className="px-7.5 py-5.5 mt-12 shadow-(color:--primary) shadow-lg/35 hover:cursor-pointer"
+          onClick={() =>
+            document
+              .getElementById('data')
+              ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }
           size="lg"
         >
           Browse Relic Sets

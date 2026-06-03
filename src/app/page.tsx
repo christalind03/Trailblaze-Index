@@ -70,7 +70,10 @@ export default function Home() {
   return (
     <Fragment>
       <Hero />
-      <div className="flex flex-col items-center justify-center pb-15 pt-5 px-5">
+      <div
+        className="flex flex-col items-center justify-center pb-15 pt-5 px-5"
+        id="data"
+      >
         {artifactData && characterData && (
           <Fragment>
             <div className="flex flex-col gap-1.5 max-w-[475px] w-full">
